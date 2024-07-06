@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Orbitrax - Orbit Simulation
+        </title>
+        <script type="module">
+            import { getPositionInOrbit } from "../dist/main.js"
+            
+            const semiMajorAxisInput = document.getElementById("semiMajorAxisInput")
+            const eccentricityInput = document.getElementById("eccentricityInput")
+            const inclinationInput = document.getElementById("inclinationInput")
+            const raanInput = document.getElementById("raanInput")
+            const argOfPeriapsisInput = document.getElementById("argOfPeriapsisInput")
+            const meanAnomalyInput = document.getElementById("meanAnomalyInput")
+
+            const display = document.getElementById("display")
+            /** @type {CanvasRenderingContext2D} */
+            const context = display.getContext("2d")
+
+            const update = () => {
+                requestAnimationFrame(update)
+                context.clearRect(0, 0, display.width, display.height)
+
+                const orbit = {
+                    semiMajorAxis: semiMajorAxisInput.valueAsNumber,
+                    eccentricity: eccentricityInput.valueAsNumber,
+                    inclination: inclinationInput.valueAsNumber * Math.PI / 180,
+                    raan: raanInput.valueAsNumber * Math.PI / 180,
+                    argOfPeriapsis: argOfPeriapsisInput.valueAsNumber * Math.PI / 180,
+                    meanAnomaly: meanAnomalyInput.valueAsNumber * Math.PI / 180,
+                }
+
+                context.fillStyle = "black"
+                context.fillText("Semi-Major-Axis: " + semiMajorAxisInput.value, 10, 10)
+                context.fillText("Eccentricity: " + eccentricityInput.value, 10, 25)
+                context.fillText("Inclination: " + inclinationInput.value, 10, 40)
+                context.fillText("RAAN: " + raanInput.value, 10, 55)
+                context.fillText("Argument of Periapsis: " + argOfPeriapsisInput.value, 10, 70)
+                context.fillText("Mean Anomaly: " + meanAnomalyInput.value, 10, 85)
+
+                context.save()
+                context.translate(display.width / 2, display.height / 2)
+
+                context.fillStyle = "red"
+                context.beginPath()
+                context.arc(0, 0, 20, 0, 2 * Math.PI)
+                context.fill()
+
+                const position = getPositionInOrbit(orbit)
+                context.fillStyle = "green"
+                context.beginPath()
+                context.arc(position.x, position.y, 10, 0, 2 * Math.PI)
+                context.fill()
+
+                context.strokeStyle = "black"
+                context.beginPath()
+                for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 180) {
+                    const currentOrbit = {
+                        ...orbit,
+                        meanAnomaly: orbit.meanAnomaly + angle,
+                    }
+                    const currentPosition = getPositionInOrbit(currentOrbit)
+                    context.lineTo(currentPosition.x, currentPosition.y)
+                }
+                context.stroke()
+
+                context.restore()
+            }
+
+            requestAnimationFrame(update)
+        </script>
+    </head>
+    <body>
+        <canvas id="display" width="800" height="600"></canvas>
+        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1em;">
+            <label for="semiMajorAxisInput">Semi-Major-Axis:</label>
+            <input type="range" id="semiMajorAxisInput" min="0" max="300">
+
+            <label for="eccentricityInput">Eccentricity:</label>
+            <input type="range" id="eccentricityInput" min="-2" max="2" step="0.01">
+
+            <label for="inclinationInput">Inclination:</label>
+            <input type="range" id="inclinationInput" min="0" max="360">
+
+            <label for="raanInput">RAAN:</label>
+            <input type="range" id="raanInput" min="0" max="360">
+
+            <label for="argOfPeriapsisInput">Argument of Periapsis:</label>
+            <input type="range" id="argOfPeriapsisInput" min="0" max="360">
+
+            <label for="meanAnomalyInput">Mean Anomaly:</label>
+            <input type="range" id="meanAnomalyInput" min="0" max="360">         
+        </div>
+    </body>
+</html>
